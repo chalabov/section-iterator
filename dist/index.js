@@ -2,36 +2,30 @@
 
 var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 
+var nonZero = function nonZero(i) {
+  return i > 0;
+};
+
 module.exports = function (_ref) {
   var data = _ref.data;
   var multiSection = _ref.multiSection;
-  var _ref$allowNull = _ref.allowNull;
-  var allowNull = _ref$allowNull === undefined ? true : _ref$allowNull;
+  var _ref$wrap = _ref.wrap;
+  var wrap = _ref$wrap === undefined ? true : _ref$wrap;
 
-  var isEmpty = multiSection ? !data.some(function (i) {
-    return i > 0;
-  }) : data === 0;
+  var isEmpty = multiSection ? !data.some(nonZero) : data === 0;
 
   function nextNonEmptySectionIndex(sectionIndex) {
     if (isEmpty) {
       return null;
     }
 
-    if (sectionIndex == null) {
-      sectionIndex = 0;
-    } else {
-      sectionIndex++;
-    }
+    var start = sectionIndex === null ? 0 : sectionIndex + 1;
+    var delta = data.slice(start).findIndex(nonZero);
 
-    while (sectionIndex < data.length && data[sectionIndex] === 0) {
-      sectionIndex++;
+    if (delta === -1) {
+      return wrap ? null : sectionIndex;
     }
-
-    if (sectionIndex === data.length) {
-      return allowNull ? null : nextNonEmptySectionIndex(null);
-    }
-
-    return sectionIndex;
+    return start + delta;
   }
 
   function prevNonEmptySectionIndex(sectionIndex) {
@@ -39,21 +33,13 @@ module.exports = function (_ref) {
       return null;
     }
 
-    if (sectionIndex === null) {
-      sectionIndex = data.length - 1;
-    } else {
-      sectionIndex--;
-    }
+    var start = sectionIndex === null ? data.length : sectionIndex;
+    var delta = data.slice(0, start).reverse().findIndex(nonZero);
 
-    while (sectionIndex >= 0 && data[sectionIndex] === 0) {
-      sectionIndex--;
+    if (delta === -1) {
+      return wrap ? null : sectionIndex;
     }
-
-    if (sectionIndex === -1) {
-      return allowNull ? null : prevNonEmptySectionIndex(null);
-    }
-
-    return sectionIndex;
+    return start - 1 - delta;
   }
 
   function next(position) {
@@ -69,20 +55,24 @@ module.exports = function (_ref) {
 
     if (multiSection) {
       if (itemIndex === null || itemIndex === data[sectionIndex] - 1) {
-        sectionIndex = nextNonEmptySectionIndex(sectionIndex);
+        var newSectionIndex = nextNonEmptySectionIndex(sectionIndex);
 
-        if (sectionIndex === null) {
+        if (newSectionIndex === null) {
           return [null, null];
         }
 
-        return [sectionIndex, 0];
+        if (newSectionIndex === sectionIndex) {
+          return position;
+        }
+
+        return [newSectionIndex, 0];
       }
 
       return [sectionIndex, itemIndex + 1];
     }
 
     if (itemIndex === data - 1) {
-      return allowNull ? [null, null] : next([null, null]);
+      return wrap ? [null, null] : [null, itemIndex];
     }
 
     if (itemIndex === null) {
@@ -105,20 +95,24 @@ module.exports = function (_ref) {
 
     if (multiSection) {
       if (itemIndex === null || itemIndex === 0) {
-        sectionIndex = prevNonEmptySectionIndex(sectionIndex);
+        var newSectionIndex = prevNonEmptySectionIndex(sectionIndex);
 
-        if (sectionIndex === null) {
+        if (newSectionIndex === null) {
           return [null, null];
         }
 
-        return [sectionIndex, data[sectionIndex] - 1];
+        if (newSectionIndex == sectionIndex) {
+          return position;
+        }
+
+        return [newSectionIndex, data[newSectionIndex] - 1];
       }
 
       return [sectionIndex, itemIndex - 1];
     }
 
     if (itemIndex === 0) {
-      return allowNull ? [null, null] : prev([null, null]);
+      return wrap ? [null, null] : [null, itemIndex];
     }
 
     if (itemIndex === null) {
