@@ -1,6 +1,9 @@
 {
-  "name": "section-iterator",
+  "name": "@packetloop/section-iterator",
   "version": "2.0.0",
+  "publishConfig": {
+    "registry": "https://api.bintray.com/npm/arbornetworks/packetloop"
+  },
   "description": "Simple iterator for flat and multi section lists",
   "main": "dist/index.js",
   "repository": {
@@ -14,7 +17,7 @@
     "dist": "rm -rf dist && mkdir dist && babel index.js --out-file dist/index.js",
     "prebuild": "npm run lint && npm test",
     "build": "npm run dist",
-    "postversion": "git push && git push --tags",
+    "postversion": "git push --follow-tags",
     "prepublish": "npm run dist"
   },
   "devDependencies": {
@@ -29,7 +32,8 @@
     "mocha": "^2.4.5"
   },
   "files": [
-    "dist"
+    "dist",
+    "index.js"
   ],
   "keywords": [
     "iterator",
