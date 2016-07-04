@@ -17,7 +17,6 @@
     "dist": "rm -rf dist && mkdir dist && babel index.js --out-file dist/index.js",
     "prebuild": "npm run lint && npm test",
     "build": "npm run dist",
-    "postversion": "git push --follow-tags",
     "prepublish": "npm run dist"
   },
   "devDependencies": {
